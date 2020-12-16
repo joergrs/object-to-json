@@ -1,13 +1,13 @@
-from objtojson.serialize import _Serialized, Serializer
+from objtojson import Serialized, Serializer
 
 
-class A(_Serialized):
+class A(Serialized):
     def __init__(self, integer=3, other=None):
         self.integer = integer
         self.other = other
 
 
-class B(_Serialized):
+class B(Serialized):
     def __init__(self, a, b):
         self.a = a
         self.b = b

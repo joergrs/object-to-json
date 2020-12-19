@@ -45,23 +45,11 @@ class _SerializeMeta(type):
             """ Convert object to JSON string"""
             attributes = {}
             for attrName in _SerializeMeta.SERIALIZED_ATTRIBUTES[clazz.__name__]:
-                value = getattr(slf, attrName)
+                obj = getattr(slf, attrName)
                 if attrName in slf.CUSTOM_SERIALIZERS:
-                    value = slf.CUSTOM_SERIALIZERS[attrName]().Serialize(value)
-                elif isinstance(value, _Serialized):
-                    value = value.Serialize()
-                elif isinstance(value, dict):
-                    savedDict = value.copy()
-                    for k, v in value.copy().items():
-                        if isinstance(v, _Serialized):
-                            savedDict[k] = v.Serialize()
-                    value = savedDict
-                elif isinstance(value, list):
-                    savedList = list(value)
-                    for i, v in enumerate(value):
-                        if isinstance(v, _Serialized):
-                            savedList[i] = v.Serialize()
-                    value = savedList
+                    value = slf.CUSTOM_SERIALIZERS[attrName]().Serialize(obj)
+                else:
+                    value = cls.SerializeObject(obj)
                 attributes[attrName] = value
             return {serializedName: attributes}
         def FromJson(slf, jsonString):
@@ -73,6 +61,35 @@ class _SerializeMeta(type):
             slf.AfterDeserialize()
 
         return Serialize, Deserialize, FromJson
+
+    @staticmethod
+    def SerializeObject(obj):
+        if isinstance(obj, _Serialized):
+            value = obj.Serialize()
+
+        elif isinstance(obj, dict):
+            savedDict = obj.copy()
+            for k, v in obj.copy().items():
+                serializedKey = _SerializeMeta.SerializeObject(k)
+                if not isinstance(serializedKey, str):
+                    raise SerializeError(f'Only strings are allowed as dict keys. '
+                                         f'Got {type(serializedKey)}')
+                savedDict[serializedKey] = _SerializeMeta.SerializeObject(v)
+            value = savedDict
+
+        elif isinstance(obj, (list, tuple)):
+            savedList = list(obj)
+            for i, v in enumerate(obj):
+                savedList[i] = _SerializeMeta.SerializeObject(v)
+            value = savedList
+
+        elif isinstance(obj, (str, float, int, bool)):
+            # use as-is
+            value = obj
+
+        else:
+            raise SerializeError(f'No serialization method available for object of type {type(obj)}')
+        return value
 
     @classmethod
     def __ExtractArgs(cls, method):
@@ -113,23 +130,24 @@ class _Serialized(metaclass=_SerializeMeta):
     How it works? Any argument to __init__ will be assumed to have an instance variable
     with the same name. These will be detected and stored to JSON.
     """
-    SERIALIZED_NAME: str = ''
+    SERIALIZED_NAME: str = ''  # Will be initialized automatically. Do not overwrite!
     CUSTOM_SERIALIZERS: Dict[str, CustomSerializer] = {}
 
     @classmethod
     def Deserialize(cls, dct):
-        """ Dummy method -> Defined in metaclass """
+        """ Dummy method -> Automatically implemented in metaclass """
         return None
 
     def Serialize(self) -> Dict:
-        """ Dummy method -> Defined in metaclass """
+        """ Dummy method -> Automatically implemented in metaclass """
         return {}
 
     def AfterDeserialize(self):
+        """ Override to perform custom actions after deserialization """
         pass
 
     def FromJson(self, jsonString: str):
-        """ Dummy method -> Defined in metaclass """
+        """ Dummy method -> Automatically implemented in metaclass """
         pass
 
     def ToJson(self) -> str:

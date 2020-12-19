@@ -5,6 +5,12 @@ format.
 
 ## [Unreleased]
 
+## [0.4.0] - 2020-12-19
+
+### Added
+
+- Published on PyPI
+
 ## [0.3.0] - 2020-12-19
 
 ### Added

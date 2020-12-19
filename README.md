@@ -12,7 +12,7 @@ JSON serializer for class instances with minimal declaration overhead.
 
 ## Installation
 
-`pip install -e git+https://github.com/joergrs/object-to-json.git#egg=objtojson`
+`pip install objtojson`
 
 ## Example
 

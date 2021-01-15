@@ -61,3 +61,11 @@ def test_example():
     a = SomeClass(4, [AnotherClass(['a', 'list'], {'mykey': 34}), 'somestring'])
     print(a.ToJson())
 
+
+def test_None():
+    a = SomeClass(None, [None, {'x': None}])
+    a_reloaded = Serializer.FromJson(a.ToJson())
+    assert isinstance(a_reloaded, SomeClass)
+    assert a.someAttribute == a_reloaded.someAttribute
+    assert a.other == a_reloaded.other
+    assert a == a_reloaded

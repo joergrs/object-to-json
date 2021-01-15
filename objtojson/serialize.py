@@ -83,7 +83,7 @@ class _SerializeMeta(type):
                 savedList[i] = _SerializeMeta.SerializeObject(v)
             value = savedList
 
-        elif isinstance(obj, (str, float, int, bool)):
+        elif obj is None or isinstance(obj, (str, float, int, bool)):
             # use as-is
             value = obj
 
